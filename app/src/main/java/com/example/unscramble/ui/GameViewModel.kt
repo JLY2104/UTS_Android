@@ -27,11 +27,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import android.content.Context
+import androidx.compose.ui.text.TextGranularity.Companion.Word
+import androidx.lifecycle.viewModelScope
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.example.unscramble.data.WordDao
+import com.example.unscramble.data.Words
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel containing the app data and methods to process the data
  */
-class GameViewModel : ViewModel() {
+class GameViewModel(private val wordDao: WordDao) : ViewModel()  {
 
     // Game UI state
     private val _uiState = MutableStateFlow(GameUiState())
@@ -83,9 +92,42 @@ class GameViewModel : ViewModel() {
         updateUserGuess("")
     }
 
-    /*
-     * Skip to next word
-     */
+
+        // ... (Kode game Unscramble lama Anda biarkan saja) ...
+
+
+        fun saveNewWord(newWord: String) {
+            viewModelScope.launch {
+                if (newWord.isNotBlank()) {
+                    val wordEntity = Words(words = newWord.trim().lowercase())
+                    wordDao.InsertWord(wordEntity)
+                }
+            }
+        }
+
+        // Nanti Anda perlu mengubah logika pickRandomWord()
+        // agar mengambil dari wordDao.getAllWords() bukan dari list statis.
+
+
+    @Database(entities = [Words::class], version = 1, exportSchema = false)
+    abstract class WordDatabase : RoomDatabase() {
+        abstract fun wordDao(): WordDao
+
+        companion object {
+            @Volatile
+            private var Instance: WordDatabase? = null
+
+            fun getDatabase(context: Context): WordDatabase {
+                return Instance ?: synchronized(this) {
+                    Room.databaseBuilder(context, WordDatabase::class.java, "word_database")
+                        .fallbackToDestructiveMigration()
+                        .build()
+                        .also { Instance = it }
+                }
+            }
+        }
+    }
+
     fun skipWord() {
         updateGameState(_uiState.value.score)
         // Reset user guess

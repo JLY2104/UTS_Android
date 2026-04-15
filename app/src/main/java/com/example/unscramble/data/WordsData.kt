@@ -1,10 +1,9 @@
 package com.example.unscramble.data
-import android.R
-import  androidx.room.Entity
-import  androidx.room.PrimaryKey
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
 @Entity(tableName = "words_data" )
-data class  words(
+data class  Words(
     @PrimaryKey(autoGenerate = true)
     val  id: Int = 0,
     val  words: String
